@@ -1,11 +1,12 @@
-import ApiError from "./ApiError";
+import ApiError from "./ApiError.js";
 
 const asyncHandler = (fn) => {
   return async (req, res, next) => {
     try {
-      await fn(req, Response, next);
+      await fn(req, res, next);
     } catch (error) {
-      next(new ApiError(404, error.message));
+      console.log(error.message);
+      next(error);
     }
   };
 };
