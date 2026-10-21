@@ -148,7 +148,7 @@ const refreshaccesstoken = asyncHandler(async (req, res) => {
   user.refreshToken = refreshToken;
 
   await user.save({ validateBeforeSave: false });
-    const options = {
+  const options = {
     httpOnly: true,
     secure: true,
   };
@@ -171,6 +171,27 @@ const admindash = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, user, "Admin Logged in"));
 });
 
+const updatecredentials = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const allowdFields = [
+    "name",
+    "phone",
+    "organization",
+    "city",
+    "area",
+    "citiesServed",
+  ];
+  for (const field of allowdFields) {
+    if (req.body[field] != undefined) {
+      user[field] = req.body[field];
+    }
+  }
+  await user.save();
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Updated user credentials"));
+});
+
 export {
   registeruser,
   loginuser,
@@ -179,4 +200,5 @@ export {
   logoutuser,
   refreshaccesstoken,
   admindash,
+  updatecredentials,
 };

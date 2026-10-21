@@ -7,6 +7,7 @@ import {
   logoutuser,
   refreshaccesstoken,
   admindash,
+  updatecredentials,
 } from "../controllers/user.controller.js";
 import jwtverify from "../middlewares/auth.middleware.js";
 import admincheck from "../middlewares/admincheck.middleware.js";
@@ -20,5 +21,6 @@ router.route("/logout").post(jwtverify, logoutuser);
 router.route("/changepass").post(jwtverify, changepassword);
 router.route("/current-user").get(jwtverify, currentUser);
 router.route("/admindash").get(jwtverify, admincheck, admindash);
+router.route("/update").patch(jwtverify, updatecredentials);
 
 export default router;
