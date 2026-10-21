@@ -93,4 +93,71 @@ const fetchdonationbyid = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, donation, "User By ID Fetched"));
 });
-export { createdonation, fetchdonations, fetchdonationbyid };
+
+const updatedonation = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const donation = await Donation.findById(id);
+  if (!donation) throw new ApiError(400, "No Donation Found");
+
+  if (donation.donor.toString() !== req.user._id.toString())
+    throw new ApiError(403, "Unauthorized user for Updating Donation");
+
+  if (donation.status != "Available")
+    throw new ApiError(409, "Not Available Status");
+
+  const allowedfields = [
+    "foodName",
+    "category",
+    "description",
+    "quantity",
+    "unit",
+    "preparedAt",
+    "expiryAt",
+    "pickupArea",
+    "pickupAddress",
+    "specialInstructions",
+  ];
+  if (req.body.quantity && req.body.quantity <= 0)
+    throw new ApiError(400, "Invalid Quantity");
+
+  for (const field of allowedfields) {
+    if (req.body[field] !== undefined) {
+      donation[field] = req.body[field];
+    }
+  }
+  if (donation.isFoodExpired()) throw new ApiError(409, "Food is Expired");
+
+  await donation.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, donation, "Donations Updated"));
+});
+
+const cancelDonations = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const donation = await Donation.findById(id);
+  if (!donation) throw new ApiError(400, "No Donation Found");
+
+  if (donation.donor.toString() !== req.user._id.toString())
+    throw new ApiError(400, "Unauthorized for cancelling Donations");
+
+  if (donation.status === "Cancelled")
+    throw new ApiError(400, "Donation is already Cancelled");
+  if (donation.status === "Reserved")
+    throw new ApiError(400, "Donation is Reserved");
+
+  donation.status = "Cancelled";
+  await donation.save();
+  return res
+    .status(201)
+    .json(new ApiResponse(201, donation, "Donation Cancelled Successfully"));
+});
+
+export {
+  createdonation,
+  fetchdonations,
+  fetchdonationbyid,
+  updatedonation,
+  cancelDonations,
+};
