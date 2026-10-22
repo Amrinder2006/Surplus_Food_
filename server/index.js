@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import expiryschedule from "./src/utils/expiryScheduler.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -14,6 +15,7 @@ connectdb()
     app.listen(port, () => {
       console.log(`App is running at port ${port}`);
     });
+    expiryschedule();
   })
   .catch((err) => {
     console.log(err.message);

@@ -13,7 +13,8 @@ import {
   reservedonation,
   cancelreservation,
 } from "../controllers/receiver.controller.js";
-
+import admincheck from "../middlewares/admincheck.middleware.js";
+import expireddonation from "../utils/expirydonation.js";
 const router = Router();
 router.route("/").post(jwtverify, donorcheck, createdonation);
 router.route("/").get(fetchdonations);
@@ -24,4 +25,6 @@ router.route("/reserve/:id").patch(jwtverify, receivercheck, reservedonation);
 router
   .route("/cancelreserve/:id")
   .patch(jwtverify, receivercheck, cancelreservation);
+
+router.route("/expirycheck").post(jwtverify, admincheck, expireddonation);
 export default router;
