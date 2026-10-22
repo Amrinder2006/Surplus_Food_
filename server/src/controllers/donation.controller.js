@@ -70,6 +70,7 @@ const fetchdonations = asyncHandler(async (req, res) => {
         status: "Available",
         ...(city && { city }),
         ...(category && category != "All" && { category }),
+        expiryAt: { $gt: new Date() },
       },
     },
   ]);
@@ -89,6 +90,7 @@ const fetchdonationbyid = asyncHandler(async (req, res) => {
     status: "Available",
   });
   if (!donation) throw new ApiError(400, "No Donation Found");
+  if (donation.isFoodExpired()) throw new ApiError(400, "Food is Expired");
   return res
     .status(200)
     .json(new ApiResponse(200, donation, "User By ID Fetched"));
