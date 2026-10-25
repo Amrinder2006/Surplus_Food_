@@ -25,7 +25,7 @@ const pickupschema = mongoose.Schema(
       enum: ["PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "FAILED"],
       default: "PENDING",
     },
-    otpHash: {
+    otp: {
       type: String,
     },
     otpExpiresAt: {

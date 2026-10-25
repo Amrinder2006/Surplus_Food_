@@ -15,6 +15,10 @@ import {
 } from "../controllers/receiver.controller.js";
 import admincheck from "../middlewares/admincheck.middleware.js";
 import expireddonation from "../utils/expirydonation.js";
+import {
+  createpickup,
+  pickupverify,
+} from "../controllers/pickup.controller.js";
 const router = Router();
 router.route("/").post(jwtverify, donorcheck, createdonation);
 router.route("/").get(fetchdonations);
@@ -27,4 +31,8 @@ router
   .patch(jwtverify, receivercheck, cancelreservation);
 
 router.route("/expirycheck").post(jwtverify, admincheck, expireddonation);
+router
+  .route("/pickup/initiate/:id")
+  .post(jwtverify, receivercheck, createpickup);
+router.route("/pickup/verify/:id").post(jwtverify, receivercheck, pickupverify);
 export default router;

@@ -16,7 +16,7 @@ const reservedonation = asyncHandler(async (req, res) => {
       _id: id,
       status: "Available",
       expiryAt: { $gt: new Date() },
-      donor: { $ne: req.user._id }
+      donor: { $ne: req.user._id },
     },
     {
       $set: {
