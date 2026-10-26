@@ -6,8 +6,11 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 import { Pickup } from "../models/pickup.models.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import { transporter } from "../utils/EmailSend.js";
+import { User } from "../models/user.models.js";
 const createpickup = asyncHandler(async (req, res) => {
   const { id } = req.params;
+
   const user = req.user._id;
   if (!mongoose.isValidObjectId(id)) throw new ApiError(400, "Not a valid ID");
 
@@ -19,7 +22,8 @@ const createpickup = asyncHandler(async (req, res) => {
 
   const donor = donation.donor;
   const receiver = donation.receiver;
-
+  const users = await User.findById(donor);
+  if (!users) throw new ApiError(400, "No USer Found");
   if (receiver.toString() !== user.toString())
     throw new ApiError(403, "Unauthorized User");
   const existingPickup = await Pickup.findOne({
@@ -33,6 +37,7 @@ const createpickup = asyncHandler(async (req, res) => {
 
   const otp = crypto.randomInt(100000, 1000000).toString();
   // console.log("TEST OTP:", otp);
+
   const otphash = await bcrypt.hash(otp, 10);
   const otpexpiry = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -45,6 +50,21 @@ const createpickup = asyncHandler(async (req, res) => {
     otpExpiresAt: otpexpiry,
     status: "PENDING",
   });
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: users.email,
+      subject: "OTP for Verification",
+      html: `<p>Your food pickup verification OTP is <strong>${otp}</strong>.</p>
+       <p>This OTP expires in 10 minutes. Do not share it with anyone except the intended receiver.</p>`,
+    });
+
+    console.log("Email accepted:", info.messageId);
+    console.log("Accepted recipients:", info.accepted);
+    console.log("Rejected recipients:", info.rejected);
+  } catch (error) {
+    console.log("Email Sending Error:", error.message);
+  }
 
   return res.status(201).json(
     new ApiResponse(
@@ -72,13 +92,21 @@ const pickupverify = asyncHandler(async (req, res) => {
 
   if (pickup.otpExpiresAt <= new Date(Date.now()))
     throw new ApiError(403, "Otp has expired");
-
+  if (pickup.attempts > 5)
+    throw new ApiError(403, "Maximum OTP Attempts Reached");
   if (pickup.status !== "PENDING")
     throw new ApiError(403, "Donation is not pending");
 
   const pass = await bcrypt.compare(otp, pickup.otp);
   console.log("OTP matched:", pass);
-  if (!pass) throw new ApiError(400, "OTP Didnt matched");
+  if (!pass) {
+    pickup.attempts++;
+    if (pickup.attempts > 5) {
+      pickup.status = "FAILED";
+    }
+    await pickup.save();
+    throw new ApiError(403, "OTP didn't matched");
+  }
   const donation = await Donation.findById(pickup.donation);
   if (!donation) throw new ApiError(400, "Not a Valid Donor");
 

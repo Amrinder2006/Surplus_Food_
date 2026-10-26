@@ -34,6 +34,10 @@ const pickupschema = mongoose.Schema(
     verifiedAt: {
       type: Date,
     },
+    attempts: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true },
 );
