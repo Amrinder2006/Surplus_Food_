@@ -22,6 +22,8 @@ app.use("/api/v1/users", userRouter);
 import donationrouter from "./src/routes/donation.routes.js";
 
 app.use("/api/v1/donations", donationrouter);
+import reportrouter from "./src/routes/report.routes.js";
+app.use("/api/v1/reports", reportrouter);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statuscode || 500;
