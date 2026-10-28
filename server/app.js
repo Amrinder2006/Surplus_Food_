@@ -25,6 +25,9 @@ app.use("/api/v1/donations", donationrouter);
 import reportrouter from "./src/routes/report.routes.js";
 app.use("/api/v1/reports", reportrouter);
 
+import adminrouter from "./src/routes/dashboard.routes.js";
+app.use("/api/v1/admin", adminrouter);
+
 app.use((err, req, res, next) => {
   const statusCode = err.statuscode || 500;
 
