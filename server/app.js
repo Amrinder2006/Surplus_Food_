@@ -28,6 +28,8 @@ app.use("/api/v1/reports", reportrouter);
 import adminrouter from "./src/routes/dashboard.routes.js";
 app.use("/api/v1/admin", adminrouter);
 
+import notificationrouter from "./src/routes/notification.routes.js";
+app.use("/api/v1/notifications", notificationrouter);
 app.use((err, req, res, next) => {
   const statusCode = err.statuscode || 500;
 
